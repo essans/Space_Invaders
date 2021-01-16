@@ -1,12 +1,17 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 # Space Invaders
 # Created by Lee Robinson
+# Updated by Essan Soobratty
 
 from pygame import *
 import sys
 from os.path import abspath, dirname
 from random import choice
+
+joystick.init()  #es
+joystick = joystick.Joystick(0) #es
+joystick.init() #es
 
 BASE_PATH = abspath(dirname(__file__))
 FONT_PATH = BASE_PATH + '/fonts/'
@@ -45,9 +50,10 @@ class Ship(sprite.Sprite):
         self.speed = 5
 
     def update(self, keys, *args):
-        if keys[K_LEFT] and self.rect.x > 10:
+        
+        if keys < -0.5 and self.rect.x > 10:
             self.rect.x -= self.speed
-        if keys[K_RIGHT] and self.rect.x < 740:
+        if keys > 0.5 and self.rect.x < 740:
             self.rect.x += self.speed
         game.screen.blit(self.image, self.rect)
 
@@ -421,31 +427,34 @@ class SpaceInvaders(object):
         return evt.type == QUIT or (evt.type == KEYUP and evt.key == K_ESCAPE)
 
     def check_input(self):
-        self.keys = key.get_pressed()
+        self.keys = joystick.get_axis( 3 )
+        self.button = joystick.get_button(1)
         for e in event.get():
             if self.should_exit(e):
                 sys.exit()
-            if e.type == KEYDOWN:
-                if e.key == K_SPACE:
-                    if len(self.bullets) == 0 and self.shipAlive:
-                        if self.score < 1000:
-                            bullet = Bullet(self.player.rect.x + 23,
+
+            if e.type == 1539:
+                
+                if len(self.bullets) == 0 and self.shipAlive:
+                    if self.score < 5000:
+                        bullet = Bullet(self.player.rect.x + 23,
+                                        self.player.rect.y + 5, -1,
+                                        15, 'laser', 'center')
+                        self.bullets.add(bullet)
+                        self.allSprites.add(self.bullets)
+                        self.sounds['shoot'].play()
+                    else:
+                        leftbullet = Bullet(self.player.rect.x + 8,
                                             self.player.rect.y + 5, -1,
-                                            15, 'laser', 'center')
-                            self.bullets.add(bullet)
-                            self.allSprites.add(self.bullets)
-                            self.sounds['shoot'].play()
-                        else:
-                            leftbullet = Bullet(self.player.rect.x + 8,
-                                                self.player.rect.y + 5, -1,
-                                                15, 'laser', 'left')
-                            rightbullet = Bullet(self.player.rect.x + 38,
-                                                 self.player.rect.y + 5, -1,
-                                                 15, 'laser', 'right')
-                            self.bullets.add(leftbullet)
-                            self.bullets.add(rightbullet)
-                            self.allSprites.add(self.bullets)
-                            self.sounds['shoot2'].play()
+                                            15, 'laser', 'left')
+                        rightbullet = Bullet(self.player.rect.x + 38,
+                                             self.player.rect.y + 5, -1,
+                                             15, 'laser', 'right')
+                        self.bullets.add(leftbullet)
+                        self.bullets.add(rightbullet)
+                        self.allSprites.add(self.bullets)
+                        self.sounds['shoot2'].play()
+
 
     def make_enemies(self):
         enemies = EnemiesGroup(10, 5)
